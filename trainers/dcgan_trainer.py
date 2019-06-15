@@ -26,7 +26,7 @@ class DCGANTrain(BaseTrain):
         self.model.save(self.sess)
 
     def train_step(self):
-        t_batch = next(self.data.next_batch(self.config.batch_size))
+        t_batch = self.data.next_batch().eval()
         feed_dict = {self.model.train_data : t_batch}
         _, gen_loss, dis_loss = self.sess.run([self.model.train_step, self.model.g, self.model.d], feed_dict=feed_dict)
         return gen_loss, dis_loss       
