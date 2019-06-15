@@ -12,16 +12,22 @@ GANs have proven to be very powerful generative models. So, here's a well-struct
 
 **1) base folder:**
 - contains abstract classes for both model and trainer.
+
 **2) configs folder:**
 - contains json files for different model configurations.
+
 **3) data_loader folder:**
 - contains data generator class for data loading and preprocessing.
+
 **4) main folder:**
 - contains main entry point for the project.
+
 **5) models folder:**
 - contains different model implementations.
+
 **6) trainers folder:**
 - contains trainers for models.
+
 **7) utils folder:**
 - contains logger for Tensorboard summary, argument parser, configuration processing and directory creation.
 
@@ -34,7 +40,7 @@ GANs have proven to be very powerful generative models. So, here's a well-struct
 - Put your training images in data folder.
 - Run the main file providing config and model arguments:
 ```
-python main/main.py -c -m
+    python main/main.py -c -m
 ```
 - Have a nice day!
 
