@@ -16,11 +16,11 @@ GANs have proven to be very powerful generative models. So, here's a well-struct
 **2) configs folder:**
 - contains json files for different model configurations.
 
-**3) data_loader folder:**
-- contains data generator class for data loading and preprocessing.
+**3) data folder:**
+- for the training data to be added.
 
-**4) main folder:**
-- contains main entry point for the project.
+**4) data_loader folder:**
+- contains data generator class for data loading and preprocessing.
 
 **5) models folder:**
 - contains different model implementations.
@@ -40,7 +40,7 @@ GANs have proven to be very powerful generative models. So, here's a well-struct
 - Put your training images in data folder.
 - Run the main file providing config and model arguments:
 ```
-    python main/main.py -c -m
+    python main.py -c -m
 ```
 - Have a nice day!
 
