@@ -1,3 +1,20 @@
 {
-    "exp_name" : "cyclegan"
+    "exp_name" : "cyclegan",
+    "batch_size" : 32,
+    "num_epochs" : 200,
+    "num_iter_per_epoch" : 100,
+    "t_size" : [256, 256, 3],
+    "image_size" : 256,
+    "input_nc" : 3,
+    "output_nc" : 3,
+    "df_dim" : 64,
+    "gf_dim" : 64,
+    "learning_rate" : 0.0002,
+    "beta1" : 0.5,
+    "l1_lambda" : 10.0,
+    "max_to_keep" : 10,
+    "data_dir_a" : "../data/trainA",
+    "resized_data_dir_a" : "../data_resized/trainA",
+    "data_dir_b" : "../data/trainB",
+    "resized_data_dir_b" : "../data_resized/trainB"
 }

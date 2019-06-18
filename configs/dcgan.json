@@ -9,7 +9,7 @@
     "learning_rate" : 0.0002,
     "num_epochs" : 100,
     "num_iter_per_epoch" : 100,
-    "data_dir" : "../data/",
-    "resized_data_dir" : "../data_resized/",
+    "data_dir" : "../data",
+    "resized_data_dir" : "../data_resized",
     "max_to_keep" : 10
 }

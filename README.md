@@ -34,6 +34,7 @@ GANs have proven to be very powerful generative models. So, here's a well-struct
 ### Implemented Architectures
 
 - DCGAN (Deep Convolutional Generative Adverserial Networks): https://arxiv.org/abs/1511.06434
+- CycleGAN (Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks): https://arxiv.org/abs/1703.10593
 
 ### Usage
 

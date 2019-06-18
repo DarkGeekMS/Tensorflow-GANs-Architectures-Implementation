@@ -26,6 +26,7 @@ class BaseModel:
     def init_global_step(self):
         with tf.variable_scope('global_step'):
             self.global_step_tensor = tf.Variable(0, trainable=False, name='global_step')
+            self.increment_global_step_tensor = tf.assign(self.global_step_tensor, self.global_step_tensor + 1)
 
     def init_saver(self):
         raise NotImplementedError   

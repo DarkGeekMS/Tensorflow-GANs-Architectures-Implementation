@@ -126,12 +126,12 @@ class CycleGANModel(BaseModel):
         self.init_saver()
 
     def build_model(self):
-        self.real_data = tf.placeholder(tf.float32, 
-                                        [None, self.image_size, self.image_size, 
-                                        self.input_c_dim + self.output_c_dim],
-                                        name="real_images")
-        self.real_A = self.real_data[:,:,:,:self.input_c_dim]
-        self.real_B = self.real_data[:,:,:,self.input_c_dim:self.input_c_dim+self.output_c_dim]
+        self.real_A = tf.placeholder(tf.float32, 
+                                        [None, self.image_size, self.image_size, self.input_c_dim],
+                                        name="real_A_images")
+        self.real_B = tf.placeholder(tf.float32, 
+                                        [None, self.image_size, self.image_size, self.output_c_dim],
+                                        name="real_B_images")
         
         self.fake_B = self.gen_ab(self.real_A, reuse=False)
         self.fake_Acc = self.gen_ba(self.fake_B, reuse=False)
@@ -173,7 +173,13 @@ class CycleGANModel(BaseModel):
 
         t_vars = tf.trainable_variables()
         self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
-        self.g_vars = [var for var in t_vars if 'generator' in var.name]                                                                 
+        self.g_vars = [var for var in t_vars if 'generator' in var.name]    
+
+        self.lr = tf.placeholder(tf.float32, None, name="learning_rate")
+        self.d_optim = tf.train.AdamOptimizer(self.lr, beta1=self.config.beta1) \
+                    .minimize(self.d_loss, var_list=self.d_vars)
+        self.g_optim = tf.train.AdamOptimizer(self.lr, beta1=self.config.beta1) \
+                    .minimize(self.g_loss, var_list=self.g_vars)                                                                         
 
     def init_saver(self):
         self.saver = tf.train.Saver(max_to_keep=self.config.max_to_keep)
@@ -182,7 +188,4 @@ class CycleGANModel(BaseModel):
         return tf.reduce_mean((inputs-target)**2)
 
     def abs_criterion(self, inputs, target):
-        return tf.reduce_mean(tf.abs(inputs-target))    
-
-    def sample_images(self):
-        raise NotImplementedError            
+        return tf.reduce_mean(tf.abs(inputs-target))              

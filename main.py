@@ -15,19 +15,30 @@ def main():
         print("missing or invalid arguments")
         exit(-1)
 
-    create_dirs([config.summary_dir, config.checkpoint_dir, config.resized_data_dir])
-
     sess = tf.Session()
-
-    data = DataGenerator(config)
 
     if (args.model == 'dcgan'):
         from models.dcgan_model import DCGANModel
         from trainers.dcgan_trainer import DCGANTrain
 
+        create_dirs([config.summary_dir, config.checkpoint_dir, config.resized_data_dir])
+        data = DataGenerator(config.data_dir, config.resized_data_dir, config.t_size, config.batch_size)
         model = DCGANModel(config)
         logger = Logger(sess, config)
         trainer = DCGANTrain(sess, model, data, config, logger)
+        model.load(sess)
+        trainer.train()
+
+    elif (args.model == 'cyclegan'):
+        from models.cyclegan_model import CycleGANModel
+        from trainers.cyclegan_trainer import CycleGANTrain
+
+        create_dirs([config.summary_dir, config.checkpoint_dir, config.resized_data_dir_a, config.resized_data_dir_b])
+        dataA = DataGenerator(config.data_dir_a, config.resized_data_dir_a, config.t_size, config.batch_size)
+        dataB = DataGenerator(config.data_dir_b, config.resized_data_dir_b, config.t_size, config.batch_size)
+        model = CycleGANModel(config)
+        logger = Logger(sess, config)
+        trainer = CycleGANTrain(sess, model, [dataA, dataB], config, logger)
         model.load(sess)
         trainer.train()
 
