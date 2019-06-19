@@ -2,6 +2,7 @@ import tensorflow as tf
 import os
 
 class Logger:
+    """A class for summarizing training performance and creating Tensorboard logs"""
     def __init__(self, sess, config):
         self.sess = sess
         self.config = config
@@ -10,6 +11,14 @@ class Logger:
         self.train_summary_writer = tf.summary.FileWriter(self.config.summary_dir, self.sess.graph)
 
     def summarize(self, step, scope="", summaries_dict=None):
+         """
+         Creates training summaries
+        :param step: the step of the summary
+        :param summarizer: use the train summary writer or the test one
+        :param scope: variable scope
+        :param summaries_dict: the dict of the summaries values (tag,value)
+        :return:
+        """
         summary_writer = self.train_summary_writer
         with tf.variable_scope(scope):
             if summaries_dict is not None:

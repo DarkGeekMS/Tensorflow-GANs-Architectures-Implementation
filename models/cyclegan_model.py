@@ -7,12 +7,14 @@ import tensorflow.contrib.slim as slim
 from tensorflow.python.framework import ops
 
 class Generator:
+    """A class for CyleGAN generator network"""
     def __init__(self, gf_dim, output_c_dim, name="generator"):
         self.gf_dim = gf_dim
         self.output_c_dim = output_c_dim
         self.name = name
 
     def __call__(self, inputs, reuse=False):
+        """Builds the computational graph of the generator with residual blocks"""
         with tf.variable_scope(self.name):
             if reuse:
                 tf.get_variable_scope().reuse_variables()
@@ -39,6 +41,7 @@ class Generator:
             self.pred = tf.nn.tanh(self.conv2d(d2, self.output_c_dim, 7, 1, padding='VALID', name='g_pred_c'))                       
 
     def instance_norm(self, inputs, name="instance_norm"):
+        """Applies instance normalization to Tensorflow layers"""
         with tf.variable_scope(name):
             depth = inputs.get_shape()[3]
             scale = tf.get_variable("scale", [depth], initializer=tf.random_normal_initializer(1.0, 0.02, dtype=tf.float32))
@@ -50,18 +53,21 @@ class Generator:
             return scale*normalized_inputs + offset  
 
     def conv2d(self, inputs, output_dim, kernel_size=4, strides=2, stddev=0.02, padding='SAME', name="conv2d"):
+        """Applies convolution operation with no activation function"""
         with tf.variable_scope(name):
             return slim.conv2d(inputs, output_dim, kernel_size, strides, padding=padding, activation_fn=None,
                                 weights_initializer=tf.truncated_normal_initializer(stddev=stddev),
                                 biases_initializer=None)   
 
     def deconv2d(self, inputs, output_dim, kernel_size=4, strides=2, stddev=0.02, name="deconv2d"):
+        """Applies deconvolution operation with no activation function for upsampling"""
         with tf.variable_scope(name):
             return slim.conv2d_transpose(inputs, output_dim, kernel_size, strides, padding='SAME', activation_fn=None,
                                         weights_initializer=tf.truncated_normal_initializer(stddev=stddev),
                                         biases_initializer=None)    
 
     def residual_block(self, inputs, dim, kernel_size=3, strides=1, name="res"):
+        """Builds a residual block to be used in the contracting path in the generator"""
         p = int((kernel_size - 1) / 2)
         y = tf.pad(x, [[0, 0], [p, p], [p, p], [0, 0]], "REFLECT")
         y = self.instance_norm(self.conv2d(y, dim, kernel_size, strides, padding='VALID', name=name+'_c1'), name+'_bn1')
@@ -71,11 +77,13 @@ class Generator:
 
 
 class Discriminator:
+    """A class for CyleGAN discriminator network"""
     def __init__(self, df_dim, name="discriminator"):
         self.df_dim = df_dim
         self.name = name
 
     def __call__(self, inputs, reuse=False):
+        """Builds the computational graph of the discriminator"""
         with tf.variable_scope(name):
             if reuse: 
                 tf.get_variable_scope().reuse_variables()
@@ -88,6 +96,7 @@ class Discriminator:
             self.pred = self.conv2d(h3, 1, strides=1, name='d_pred')           
 
     def instance_norm(self, inputs, name="instance_norm"):
+        """Applies instance normalization to Tensorflow layers"""
         with tf.variable_scope(name):
             depth = inputs.get_shape()[3]
             scale = tf.get_variable("scale", [depth], initializer=tf.random_normal_initializer(1.0, 0.02, dtype=tf.float32))
@@ -99,16 +108,19 @@ class Discriminator:
             return scale*normalized_inputs + offset  
 
     def conv2d(self, inputs, output_dim, kernel_size=4, strides=2, stddev=0.02, padding='SAME', name="conv2d"):
+        """Applies convolution operation with no activation function"""
         with tf.variable_scope(name):
             return slim.conv2d(inputs, output_dim, kernel_size, strides, padding=padding, activation_fn=None,
                                 weights_initializer=tf.truncated_normal_initializer(stddev=stddev),
                                 biases_initializer=None)
 
     def lrelu(self, inputs, leak=0.2, name="lrelu"):
+        """Applies leaky rectified linear activation to be used in discriminator"""
         return tf.maximum(inputs, leak * inputs)                                                                                              
 
 
 class CycleGANModel(BaseModel):
+    """A class for building the full graph of CycleGAN architecture"""
     def __init__(self, config):
         super(CycleGANModel, self).__init__(config)
         self.batch_size = self.config.batch_size
@@ -126,6 +138,8 @@ class CycleGANModel(BaseModel):
         self.init_saver()
 
     def build_model(self):
+        """Defines the losses of CycleGAN and completes the model build"""
+        # defining placeholders for input data
         self.real_A = tf.placeholder(tf.float32, 
                                         [None, self.image_size, self.image_size, self.input_c_dim],
                                         name="real_A_images")
@@ -133,14 +147,17 @@ class CycleGANModel(BaseModel):
                                         [None, self.image_size, self.image_size, self.output_c_dim],
                                         name="real_B_images")
         
+        # defining outputs of generator and cycle outputs
         self.fake_B = self.gen_ab(self.real_A, reuse=False)
         self.fake_Acc = self.gen_ba(self.fake_B, reuse=False)
         self.fake_A = self.gen_ba(self.real_B, reuse=True)
         self.fake_Bcc = self.gen_ab(self.fake_A, reuse=True)
 
+        # defining outputs of discriminator for fake inputs
         self.DA_fake = self.dis_a(self.fake_A, reuse=False)
         self.DB_fake = self.dis_b(self.fake_B, reuse=False)
 
+        # defining generator and cycle-consistency losses
         self.g_loss_a2b = self.loss(self.DB_fake, tf.ones_like(self.DB_fake)) \
                         + self.l1_lambda * self.abs_criterion(self.real_A, self.fake_Acc) \
                         + self.l1_lambda * self.abs_criterion(self.real_B, self.fake_Bcc) 
@@ -151,7 +168,8 @@ class CycleGANModel(BaseModel):
                     + self.loss(self.DB_fake, tf.ones_like(self.DB_fake)) \
                     + self.l1_lambda * self.abs_criterion(self.real_A, self.fake_Acc) \
                     + self.l1_lambda * self.abs_criterion(self.real_B, self.fake_Bcc)
-                    
+
+        # defining placeholders and outputs for fake inputs to discriminator            
         self.fake_A_sample = tf.placeholder(tf.float32, 
                             [None, self.image_size, self.image_size, self.input_c_dim], 
                             name="fake_A_sample")
@@ -163,6 +181,7 @@ class CycleGANModel(BaseModel):
         self.DB_fake_sample = self.dis_b(self.fake_B_sample, reuse=True)
         self.DA_fake_sample = self.dis_a(self.fake_A_sample, reuse=True)
 
+        # defining both discriminator losses
         self.db_loss_real = self.loss(self.DB_real, tf.ones_like(self.DB_real))
         self.db_loss_fake = self.loss(self.DB_fake_sample, tf.zeros_like(self.DB_fake_sample))
         self.db_loss = (self.db_loss_real + self.db_loss_fake) / 2
@@ -171,10 +190,12 @@ class CycleGANModel(BaseModel):
         self.da_loss = (self.da_loss_real + self.da_loss_fake) / 2
         self.d_loss = self.da_loss + self.db_loss
 
+        # defining training variables
         t_vars = tf.trainable_variables()
         self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
         self.g_vars = [var for var in t_vars if 'generator' in var.name]    
 
+        # defining optimizers
         self.lr = tf.placeholder(tf.float32, None, name="learning_rate")
         self.d_optim = tf.train.AdamOptimizer(self.lr, beta1=self.config.beta1) \
                     .minimize(self.d_loss, var_list=self.d_vars)
@@ -182,10 +203,13 @@ class CycleGANModel(BaseModel):
                     .minimize(self.g_loss, var_list=self.g_vars)                                                                         
 
     def init_saver(self):
+        """Initializes model saver"""
         self.saver = tf.train.Saver(max_to_keep=self.config.max_to_keep)
 
     def mae_criterion(self, inputs, target):
+        "Defines squared error to be used as a loss for discriminator and generator"
         return tf.reduce_mean((inputs-target)**2)
 
     def abs_criterion(self, inputs, target):
+        """Defines absolute loss to be used as cycle-consistency loss"""
         return tf.reduce_mean(tf.abs(inputs-target))              

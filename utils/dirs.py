@@ -1,6 +1,7 @@
 import os
 
 def create_dirs(dirs):
+    """Creates directories, if not existing"""
     try:
         for dir_ in dirs:
             if not os.path.exists(dir_):

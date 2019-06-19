@@ -2,12 +2,14 @@ from base.base_model import BaseModel
 import tensorflow as tf
 
 class Generator:
+    """A class for DCGAN generator network"""
     def __init__(self, depths=[1024,512,256,128], s_size=4):
         self.depths = depths + [3]
         self.s_size = s_size
         self.reuse = False
 
     def __call__(self, inputs, is_training=False):
+        """Builds the computational graph of the generator"""
         inputs = tf.convert_to_tensor(inputs)
         with tf.variable_scope('gen', reuse=self.reuse):
             with tf.variable_scope('reshape'):
@@ -33,13 +35,15 @@ class Generator:
 
 
 class Discriminator:
+    """A class for DCGAN discriminator network"""
     def __init__(self, depths=[64,128,256,512]):
         self.depths = [3] + depths
         self.reuse = False
 
     def __call__(self, inputs, is_training=False, name=''):
-        
+        """Builds the computational graph of the discriminator"""
         def leaky_relu(x, leak=0.2, name=''):
+            # Defines leaky rectified linear activation to be used in the discriminator
             return tf.maximum(x, x*leak, name=name)
 
         outputs = tf.convert_to_tensor(inputs)
@@ -66,6 +70,7 @@ class Discriminator:
         
 
 class DCGANModel(BaseModel):
+    """A class for building the full graph of DCGAN architecture"""
     def __init__(self, config):
         super(DCGANModel, self).__init__(config)
         self.batch_size = self.config.batch_size
@@ -78,10 +83,13 @@ class DCGANModel(BaseModel):
         self.init_saver()
 
     def build_model(self):
+        """Defines the losses of DCGAN and completes the model build"""
+        # defining generator and discriminator outputs
         self.train_data = tf.placeholder(tf.float32, shape=[None] + self.config.t_size)
         generated = self.gen(self.z, is_training=True)
         g_outputs = self.dis(generated, is_training=True, name='g')
         t_outputs = self.dis(self.train_data, is_training=True, name='t')
+        # defining losses
         tf.add_to_collection(
             'g_losses',
             tf.reduce_mean(
@@ -102,6 +110,7 @@ class DCGANModel(BaseModel):
                     logits=g_outputs)))
         self.g = tf.add_n(tf.get_collection('g_losses'), name='total_g_loss')
         self.d = tf.add_n(tf.get_collection('d_losses'), name='total_d_loss')
+        # defining optimizers
         g_opt = tf.train.AdamOptimizer(learning_rate=self.config.learning_rate, beta1=0.5) 
         d_opt = tf.train.AdamOptimizer(learning_rate=self.config.learning_rate, beta1=0.5)
         g_opt_op = g_opt.minimize(self.g, var_list=self.gen.variables, global_step=self.global_step_tensor)
@@ -110,9 +119,11 @@ class DCGANModel(BaseModel):
             self.train_step = tf.no_op(name='train')
 
     def init_saver(self):
+        """Initializes model saver"""
         self.saver = tf.train.Saver(max_to_keep=self.config.max_to_keep)
 
     def sample_images(self, row=8, col=8, inputs=None):
+        """Samples output images of the generator"""
         if inputs is None:
             inputs = self.z
         images = self.gen(inputs, is_training=True)

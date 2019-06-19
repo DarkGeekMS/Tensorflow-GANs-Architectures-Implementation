@@ -6,6 +6,7 @@ import os
 import copy
 
 class DataGenerator:
+    """A class for data reading and preprocessing"""
     def __init__(self, data_dir, resized_data_dir, t_size, batch_size):
         self.data_dir = data_dir
         self.resized_data_dir = resized_data_dir
@@ -15,6 +16,7 @@ class DataGenerator:
         self.load_data()
 
     def resize_imgs(self):
+        """Resizes the training images and saving it"""
         img_list = []
         for img_name in (os.listdir(self.data_dir)):
             img_list.append(self.data_dir + img_name)
@@ -26,6 +28,7 @@ class DataGenerator:
             i += 1
 
     def load_data(self):
+        """Loads the training images from the resized images directory into a Tensorflow Dataset object"""
         img_list = []
         for img_name in (os.listdir(self.resized_data_dir)):
             img_list.append(self.resized_data_dir + img_name)
@@ -43,11 +46,13 @@ class DataGenerator:
         self.iter = dataset.make_one_shot_iterator()
 
     def next_batch(self):
+        """Yields the next batch of data"""
         train_batch = self.iter.get_next()
         yield train_batch
 
 
 class ImagePool:
+    """A class for saving a pool of images of a specific size"""
     def __init__(self, maxsize=50):
         self.maxsize = maxsize
         self.num_img = 0
