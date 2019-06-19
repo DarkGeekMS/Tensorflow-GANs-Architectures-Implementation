@@ -141,10 +141,10 @@ class CycleGANModel(BaseModel):
         """Defines the losses of CycleGAN and completes the model build"""
         # defining placeholders for input data
         self.real_A = tf.placeholder(tf.float32, 
-                                        [None, self.image_size, self.image_size, self.input_c_dim],
+                                        [self.batch_size, self.image_size, self.image_size, self.input_c_dim],
                                         name="real_A_images")
         self.real_B = tf.placeholder(tf.float32, 
-                                        [None, self.image_size, self.image_size, self.output_c_dim],
+                                        [self.batch_size, self.image_size, self.image_size, self.output_c_dim],
                                         name="real_B_images")
         
         # defining outputs of generator and cycle outputs
@@ -171,10 +171,10 @@ class CycleGANModel(BaseModel):
 
         # defining placeholders and outputs for fake inputs to discriminator            
         self.fake_A_sample = tf.placeholder(tf.float32, 
-                            [None, self.image_size, self.image_size, self.input_c_dim], 
+                            [self.batch_size, self.image_size, self.image_size, self.input_c_dim], 
                             name="fake_A_sample")
         self.fake_B_sample = tf.placeholder(tf.float32,
-                            [None, self.image_size, self.image_size, self.output_c_dim],
+                            [self.batch_size, self.image_size, self.image_size, self.output_c_dim],
                             name="fake_B_sample")
         self.DB_real = self.dis_b(self.real_B, reuse=True)        
         self.DA_real = self.dis_a(self.real_A, reuse=True)

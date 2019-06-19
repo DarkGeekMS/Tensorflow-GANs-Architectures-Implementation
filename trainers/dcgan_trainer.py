@@ -23,7 +23,7 @@ class DCGANTrain(BaseTrain):
         total_d_loss = np.mean(d_loss_values)
 
         # writing summaries and saving the current checkpoint
-        cur_it = self.model.global_step_tensor.eval(self.sess)
+        cur_it = self.model.global_step_tensor.eval(session=self.sess)
         summaries_dict = {
             'generator_loss' : total_g_loss,
             'discriminator_loss' : total_d_loss
@@ -35,7 +35,7 @@ class DCGANTrain(BaseTrain):
 
     def train_step(self):
         """Executes the logic of a single training step"""
-        t_batch = self.data.next_batch().eval()
+        t_batch = self.data.next_batch().eval(session=self.sess)
         feed_dict = {self.model.train_data : t_batch}
         _, gen_loss, dis_loss = self.sess.run([self.model.train_step, self.model.g, self.model.d], feed_dict=feed_dict)
         return gen_loss, dis_loss       
@@ -45,4 +45,5 @@ class DCGANTrain(BaseTrain):
         images = self.model.sample_images()
         self.model.load(self.sess)    
         generated = sess.run(images)
-        imsave("results/result_epoch_{}".format(self.model.cur_epoch_tensor.eval(self.sess)), generated)
+        with open("results/result_epoch_{}".format(self.model.cur_epoch_tensor.eval(session=self.sess)), 'wb') as f:
+            f.write(generated)

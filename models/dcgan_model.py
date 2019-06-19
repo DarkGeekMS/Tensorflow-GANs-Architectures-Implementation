@@ -85,7 +85,7 @@ class DCGANModel(BaseModel):
     def build_model(self):
         """Defines the losses of DCGAN and completes the model build"""
         # defining generator and discriminator outputs
-        self.train_data = tf.placeholder(tf.float32, shape=[None] + self.config.t_size)
+        self.train_data = tf.placeholder(tf.float32, shape=[self.config.batch_size] + self.config.t_size)
         generated = self.gen(self.z, is_training=True)
         g_outputs = self.dis(generated, is_training=True, name='g')
         t_outputs = self.dis(self.train_data, is_training=True, name='t')

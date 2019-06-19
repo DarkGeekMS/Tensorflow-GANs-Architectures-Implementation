@@ -5,11 +5,11 @@
     "z_dim" : 100,
     "g_depths" : [1024, 512, 256, 128],
     "d_depths" : [64, 128, 256, 512],
-    "t_size" : [96, 96, 3],
+    "t_size" : [64, 64, 3],
     "learning_rate" : 0.0002,
     "num_epochs" : 100,
     "num_iter_per_epoch" : 100,
-    "data_dir" : "../data",
-    "resized_data_dir" : "../data_resized",
+    "data_dir" : "data",
+    "resized_data_dir" : "data_resized",
     "max_to_keep" : 10
 }

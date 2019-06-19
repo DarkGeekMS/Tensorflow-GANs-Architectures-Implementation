@@ -17,21 +17,24 @@ class DataGenerator:
 
     def resize_imgs(self):
         """Resizes the training images and saving it"""
+        print("Resizing training images...")
         img_list = []
         for img_name in (os.listdir(self.data_dir)):
-            img_list.append(self.data_dir + img_name)
+            img_list.append(self.data_dir + "/" + img_name)
         i = 0
         for img in img_list:
             content = imread(img)
             content_resized = imresize(content, tuple(self.t_size[0:2]))
-            imsave(self.resized_data_dir + "IMG_{}.JPG".format(i) , content_resized)
+            imsave(self.resized_data_dir + "/IMG_{}.JPG".format(i) , content_resized)
             i += 1
+        print("Resizing Done!")    
 
     def load_data(self):
         """Loads the training images from the resized images directory into a Tensorflow Dataset object"""
+        print("Loading Data...")
         img_list = []
         for img_name in (os.listdir(self.resized_data_dir)):
-            img_list.append(self.resized_data_dir + img_name)
+            img_list.append(self.resized_data_dir + "/" + img_name)
         
         def _parse_function(filename):
             image_string = tf.read_file(filename)
@@ -44,11 +47,12 @@ class DataGenerator:
         dataset = dataset.map(_parse_function)
         dataset = dataset.repeat().batch(self.batch_size)
         self.iter = dataset.make_one_shot_iterator()
+        print("Data Loaded!")
 
     def next_batch(self):
         """Yields the next batch of data"""
         train_batch = self.iter.get_next()
-        yield train_batch
+        return train_batch
 
 
 class ImagePool:

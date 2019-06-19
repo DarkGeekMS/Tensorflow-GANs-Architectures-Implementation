@@ -14,7 +14,7 @@ class BaseTrain:
 
     def train(self):
         """Loops over epoch count and calls the function executing the training logic"""
-        for cur_epoch in range(self.model.cur_epoch_tensor.eval(self.sess), self.config.num_epochs + 1, 1):
+        for cur_epoch in range(self.model.cur_epoch_tensor.eval(session=self.sess), self.config.num_epochs + 1, 1):
             start_time = time.time()
             self.train_epoch()
             self.sess.run(self.model.increment_cur_epoch_tensor)

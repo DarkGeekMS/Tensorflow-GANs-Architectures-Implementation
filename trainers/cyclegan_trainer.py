@@ -26,7 +26,7 @@ class CycleGANTrain(BaseTrain):
         total_d_loss = np.mean(d_loss_values)
 
         # writing summaries and saving the current checkpoint
-        cur_it = self.model.global_step_tensor.eval(self.sess)
+        cur_it = self.model.global_step_tensor.eval(session=self.sess)
         summaries_dict = {
             'generator_loss' : total_g_loss,
             'discriminator_loss' : total_d_loss
@@ -38,12 +38,12 @@ class CycleGANTrain(BaseTrain):
         """Executes the logic of a single training step"""
         # getting learning rate (constant for 100 epochs, then decays linearly to zero)
         lr = self.config.learning_rate
-        cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
+        cur_epoch = self.model.cur_epoch_tensor.eval(session=self.sess)
         if  cur_epoch > 100:
             lr = lr - (cur_epoch - 100) * self.lr_decay_step 
         # getting next batch of data from both domains          
-        t_batch_a = self.data[0].next_batch().eval()
-        t_batch_b = self.data[1].next_batch().eval()
+        t_batch_a = self.data[0].next_batch().eval(session=self.sess)
+        t_batch_b = self.data[1].next_batch().eval(session=self.sess)
         # running generator optimizer and getting losses and fake outputs
         g_feed_dict = {self.model.real_A : t_batch_a, self.model.real_B : t_batch_b, self.model.lr : lr}
         fake_A, fake_B, _, gen_loss = self.sess.run([self.model.fake_A, self.model.fake_B, 
@@ -55,7 +55,7 @@ class CycleGANTrain(BaseTrain):
                     self.model.fake_B_sample : fake_B, self.model.lr : lr}
         _, dis_loss = self.sess.run([self.model.d_optim, self.model.d_loss], feed_dict=d_feed_dict)
         # sampling results at the end of each epoch  
-        if (self.model.global_step_tensor.eval(self.sess) % 100 == 0):
+        if (self.model.global_step_tensor.eval(session=self.sess) % 100 == 0):
             self.show_results(t_batch_a, t_batch_b)                          
         return gen_loss, dis_loss
 
@@ -64,5 +64,5 @@ class CycleGANTrain(BaseTrain):
         feed_dict = {self.model.real_A : t_batch_a, self.model.real_B : t_batch_b}
         fake_A, fake_B = self.sess.run([self.model.fake_A, self.model.fake_B], feed_dict=feed_dict)
         for i in range(fake_A.shape[0]):
-            imsave("results/result_epoch_{}_A".format(self.model.cur_epoch_tensor.eval(self.sess)), fake_A[i,:,:,:])
-            imsave("results/result_epoch_{}_B".format(self.model.cur_epoch_tensor.eval(self.sess)), fake_B[i,:,:,:])
+            imsave("results/result_epoch_{}_A".format(self.model.cur_epoch_tensor.eval(session=self.sess)), fake_A[i,:,:,:])
+            imsave("results/result_epoch_{}_B".format(self.model.cur_epoch_tensor.eval(session=self.sess)), fake_B[i,:,:,:])

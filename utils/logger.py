@@ -11,8 +11,8 @@ class Logger:
         self.train_summary_writer = tf.summary.FileWriter(self.config.summary_dir, self.sess.graph)
 
     def summarize(self, step, scope="", summaries_dict=None):
-         """
-         Creates training summaries
+        """
+        Creates training summaries
         :param step: the step of the summary
         :param summarizer: use the train summary writer or the test one
         :param scope: variable scope

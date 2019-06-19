@@ -13,8 +13,8 @@
     "beta1" : 0.5,
     "l1_lambda" : 10.0,
     "max_to_keep" : 10,
-    "data_dir_a" : "../data/trainA",
-    "resized_data_dir_a" : "../data_resized/trainA",
-    "data_dir_b" : "../data/trainB",
-    "resized_data_dir_b" : "../data_resized/trainB"
+    "data_dir_a" : "data/trainA",
+    "resized_data_dir_a" : "data_resized/trainA",
+    "data_dir_b" : "data/trainB",
+    "resized_data_dir_b" : "data_resized/trainB"
 }
