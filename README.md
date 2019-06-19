@@ -39,9 +39,10 @@ GANs have proven to be very powerful generative models. So, here's a well-struct
 ### Usage
 
 - Put your training images in data folder.
+- Edit the configuration JSON in configs folder **(optional)**.
 - Run the main file providing config and model arguments:
 ```
-    python main.py -c -m
+    python main.py -c <config_path> -m <model_name>
 ```
 - Have a nice day!
 
